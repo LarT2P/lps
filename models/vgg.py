@@ -3,14 +3,11 @@ import torch.utils.model_zoo as model_zoo
 import math
 import torch
 from torch.autograd.variable import Variable
-import pdb
-
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
     'vgg19_bn', 'vgg19',
 ]
-
 
 model_urls = {
     'vgg11': 'https://download.pytorch.org/models/vgg11-bbd30ac9.pth',
@@ -25,7 +22,7 @@ model_urls = {
 
 
 class VGG(nn.Module):
-
+    
     def __init__(self, features, num_classes=1000, init_weights=True):
         super(VGG, self).__init__()
         self.features = features
@@ -40,12 +37,12 @@ class VGG(nn.Module):
         )
         if init_weights:
             self._initialize_weights()
-
+    
     def forward(self, x):
         for f in self.features:
             x = f(x)
         return x
-
+    
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -79,9 +76,12 @@ def make_layers(cfg, batch_norm=False):
 
 cfg = {
     'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-    'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-    'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
-    'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
+    'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512,
+          'M'],
+    'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M',
+          512, 512, 512, 'M'],
+    'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512,
+          512, 'M', 512, 512, 512, 512, 'M'],
 }
 
 
@@ -186,12 +186,14 @@ def vgg16(pretrained=False, **kwargs):
         model.load_state_dict(model_zoo.load_url(model_urls['vgg16']))
         # model.load_state_dict(torch.load('/home/crow/SPN.pytorch/demo/models/vgg16_from_caffe.pth'))
     list_feature = list(model.features)
+    
     _features = [nn.Sequential(*list_feature[:5]),
                  nn.Sequential(*list_feature[5:10]),
                  nn.Sequential(*list_feature[10:17]),
                  nn.Sequential(*list_feature[17:24]),
                  nn.Sequential(*list_feature[24:31])]
     model.features = nn.ModuleList(_features)
+    print(model.features)
     model.classifier = None
     return model
 
@@ -266,4 +268,3 @@ if __name__ == "__main__":
     vgg = vgg16(pretrained=True).cuda()
     x = torch.Tensor(2, 3, 256, 256).cuda()
     sb = vgg(Variable(x))
-    pdb.set_trace()
